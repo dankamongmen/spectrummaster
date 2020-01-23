@@ -1,0 +1,15 @@
+Source: spectrummaster
+Section: hamradio
+Priority: optional
+Maintainer: Nick Black <dankamongmen@gmail.com>
+Build-Depends: debhelper-compat (= 12), libnotcurses-dev (>= 1.1.0)
+Standards-Version: 4.5.0.0
+Homepage: https://nick-black.com/dankwiki/index.php/Spectrummaster
+Vcs-Git: https://github.com/dankamongmen/spectrummaster.git
+
+Package: spectrummaster
+Architecture: any
+Multi-Arch: foreign
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Console-based SDR receiver
+ A console-based TUI for software defined radios.

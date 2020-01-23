@@ -1,0 +1,38 @@
+---
+kind: pipeline
+type: docker
+name: debian-unstable
+
+steps:
+- name: debian-build
+  image: dankamongmen/unstable_builder:2020-01-18a
+  commands:
+    - apt-get update
+    - apt-get -y dist-upgrade
+    - env DEBIAN_FRONTEND=noninteractive apt-get -y install git-buildpackage
+    - mk-build-deps --install -t'apt-get -y'
+    - export LANG=en_US.UTF-8
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make
+    - make test
+---
+kind: pipeline
+type: docker
+name: ubuntu-focal
+
+steps:
+- name: ubuntu-build
+  image: dankamongmen/focal:2020-01-18a
+  commands:
+    - apt-get update
+    - apt-get -y dist-upgrade
+    - env DEBIAN_FRONTEND=noninteractive apt-get -y install git-buildpackage
+    - mk-build-deps --install -t'apt-get -y'
+    - export LANG=en_US.UTF-8
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make
+    - make test

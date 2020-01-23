@@ -2,7 +2,8 @@ Source: spectrummaster
 Section: hamradio
 Priority: optional
 Maintainer: Nick Black <dankamongmen@gmail.com>
-Build-Depends: debhelper-compat (= 12), libnotcurses-dev (>= 1.1.0)
+Build-Depends: debhelper-compat (= 12), libnotcurses-dev (>= 1.1.0),
+ doctest-dev (>= 2.3.6)
 Standards-Version: 4.5.0.0
 Homepage: https://nick-black.com/dankwiki/index.php/Spectrummaster
 Vcs-Git: https://github.com/dankamongmen/spectrummaster.git

@@ -2,16 +2,32 @@ cmake_minimum_required(VERSION 3.14)
 project(spectrummaster VERSION 0.0.1
   DESCRIPTION "Console-based SDR tool"
   HOMEPAGE_URL "https://nick-black.com/dankwiki/index.php/Spectrummaster"
-  LANGUAGES C CXX)
+  LANGUAGES CXX)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 include(GNUInstallDirs)
 
+find_package(Threads REQUIRED)
 find_package(doctest REQUIRED doctest>=2.3.6)
+find_package(notcurses REQUIRED notcurses>=1.1.0)
+
+# spectrummaster binary
+file(GLOB SMSRCS CONFIGURE_DEPENDS src/*.cpp)
+add_executable(spectrummaster ${SMSRCS})
+target_link_libraries(spectrummaster
+  PRIVATE
+    Threads::Threads
+    notcurses
+)
+target_compile_options(spectrummaster
+  PRIVATE
+    -Wall -Wextra -W -Wshadow
+)
+target_compile_definitions(spectrummaster
+  PRIVATE
+    FORTIFY_SOURCE=2
+)
 
 # unit tests
 file(GLOB TESTSRCS CONFIGURE_DEPENDS tests/*.cpp)
@@ -26,7 +42,7 @@ target_compile_features(spectrummaster-tester
 )
 target_compile_options(spectrummaster-tester
   PRIVATE
-    -Wall -Wextra -W -Wshadow ${DEBUG_OPTIONS}
+    -Wall -Wextra -W -Wshadow
 )
 target_link_libraries(spectrummaster-tester
   PRIVATE

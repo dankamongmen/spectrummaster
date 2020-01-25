@@ -11,6 +11,7 @@ include(GNUInstallDirs)
 find_package(Threads REQUIRED)
 find_package(doctest REQUIRED doctest>=2.3.6)
 find_package(notcurses REQUIRED notcurses>=1.1.0)
+find_package(SoapySDR REQUIRED SoapySDR>=0.7)
 
 # spectrummaster binary
 file(GLOB SMSRCS CONFIGURE_DEPENDS src/*.cpp)
@@ -18,7 +19,7 @@ add_executable(spectrummaster ${SMSRCS})
 target_link_libraries(spectrummaster
   PRIVATE
     Threads::Threads
-    notcurses
+    notcurses notcurses++
 )
 target_compile_options(spectrummaster
   PRIVATE
@@ -44,9 +45,14 @@ target_compile_options(spectrummaster-tester
   PRIVATE
     -Wall -Wextra -W -Wshadow
 )
+target_include_directories(spectrummaster-tester
+  PRIVATE
+    src
+)
 target_link_libraries(spectrummaster-tester
   PRIVATE
     doctest::doctest
+    notcurses notcurses++
 )
 
 enable_testing()

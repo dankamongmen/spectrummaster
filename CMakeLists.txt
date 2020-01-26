@@ -8,19 +8,16 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(GNUInstallDirs)
 
+find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 find_package(doctest REQUIRED doctest>=2.3.6)
 find_package(notcurses REQUIRED notcurses>=1.1.0)
-find_package(SoapySDR REQUIRED SoapySDR>=0.7)
+pkg_check_modules(RTLSDR REQUIRED librtlsdr>=0.6.0)
+pkg_check_modules(LIBUSB REQUIRED libusb-1.0>=0.1.23)
 
 # spectrummaster binary
 file(GLOB SMSRCS CONFIGURE_DEPENDS src/*.cpp)
 add_executable(spectrummaster ${SMSRCS})
-target_link_libraries(spectrummaster
-  PRIVATE
-    Threads::Threads
-    notcurses notcurses++
-)
 target_compile_options(spectrummaster
   PRIVATE
     -Wall -Wextra -W -Wshadow
@@ -28,6 +25,16 @@ target_compile_options(spectrummaster
 target_compile_definitions(spectrummaster
   PRIVATE
     FORTIFY_SOURCE=2
+)
+target_include_directories(spectrummaster
+  PRIVATE
+    "${LIBUSB_INCLUDE_DIRS}"
+)
+target_link_libraries(spectrummaster
+  PRIVATE
+    Threads::Threads
+    notcurses notcurses++
+    "${LIBUSB_LIBRARIES}"
 )
 
 # unit tests

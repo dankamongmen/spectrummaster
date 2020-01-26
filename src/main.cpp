@@ -1,6 +1,7 @@
 #include <clocale>
 #include <cstdlib>
 #include <iostream>
+#include "usb.h"
 #include "ui.h"
 
 int main(void){
@@ -12,6 +13,7 @@ int main(void){
   // on exit (we need to restore the terminal).
   {
     UI ui{};
+    SmUSB usb{};
   }
   return EXIT_SUCCESS;
 }

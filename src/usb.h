@@ -14,6 +14,23 @@ USBException(const std::string& what) :
   std::runtime_error(what) {}
 };
 
+class USBDev {
+public:
+USBDev(int bus, int port, int addr, unsigned vendorID, unsigned productID) :
+bus_(bus),
+port_(port),
+addr_(addr),
+vendorID_(vendorID),
+productID_ (productID) {}
+
+private:
+  int bus_;
+  int port_;
+  int addr_;
+  unsigned vendorID_;
+  unsigned productID_;
+};
+
 class SmUSB {
 public:
 
@@ -48,15 +65,33 @@ cancelled_(false)
   libusb_exit(usbctx_);
 }
 
+struct USBProduct {
+  unsigned vendorID;
+  unsigned productID;
+  const char *name; // FIXME load from usb.ids?
+  // FIXME API implementation
+};
+
+static constexpr std::array<struct USBProduct, 5> USBProducts {{
+  { 0x0bda, 0x2838, "Realtek Semiconductor Corp. RTL2838 DVB-T", },
+  { 0x1d50, 0x6108, "OpenMoko, Inc. Myriad-RF LimeSDR", },
+  { 0x0403, 0x601f, "Myriad-RF LimeSDR Mini", },
+  { 0x2cf0, 0x5246, "BladeRF", },
+  { 0x2cf0, 0x5250, "BladeRF 2.0 micro", }
+}};
+
 private:
 libusb_context *usbctx_;
 libusb_hotplug_callback_handle cbhandle_;
 std::thread tid;
 std::atomic<bool> cancelled_;
+std::unordered_map<unsigned, USBDev> devices_;
 
 void USBThread() {
   while(!cancelled_){
     int completed = 0;
+    // need to loop on libusb to some degree, or hotplug events never get
+    // fired off :/
     auto e = libusb_handle_events_completed(usbctx_, &completed);
     if(e != LIBUSB_SUCCESS){
       // FIXME...
@@ -69,6 +104,12 @@ void USBThread() {
 struct USBSpeed {
   uint64_t bps;
 };
+
+// "hashes" a usb bus+port+addr, all of which take range [0..127]
+static unsigned
+USBHash(unsigned bus, unsigned port, unsigned addr) {
+  return bus * (128 * 128) + port * 128 + addr;
+}
 
 int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event){
   static constexpr std::array<struct USBSpeed, 8> speeds {{
@@ -115,7 +156,26 @@ int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event ev
   }
   std::cout << std::endl;
   std::cout.fill(prev);
-  // FIXME accumulate (and/or prune) device list
+  auto hidx = USBHash(bus, port, addr);
+  if(event == LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT){
+    devices_.erase(devices_.find(hidx), devices_.end());
+  }else if(event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED){
+    const char *devname = nullptr;
+    for(auto it = USBProducts.begin() ; it != USBProducts.end() ; ++it){
+      if(it->vendorID == desc.idVendor){
+        if(it->productID == desc.idProduct){
+          devname = it->name;
+        }
+      }
+    }
+    if(!devname){
+      return 0; // not a supported device, exit
+    }
+    std::cout << "NAME: " << devname << std::endl;
+    devices_.emplace(hidx, USBDev{ bus, port, addr, desc.idVendor, desc.idProduct});
+  }else{
+    std::cerr << "Unknown libusb message type " << event << std::endl;
+  }
   return 0;
 }
 

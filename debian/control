@@ -3,9 +3,9 @@ Section: hamradio
 Priority: optional
 Maintainer: Nick Black <dankamongmen@gmail.com>
 Build-Depends: debhelper-compat (= 12), libnotcurses-dev (>= 1.1.0),
- doctest-dev (>= 2.3.6), libusb-1.0-0-dev (>=1.0.23), librtlsdr-dev (>=0.6.0),
- libnotcurses++-dev (>= 1.1.1), cmake (>= 3.14)
-Standards-Version: 4.5.0.0
+ doctest-dev (>= 2.3.6), libusb-1.0-0-dev (>= 1.0.23), pkg-config (>= 0.29),
+ librtlsdr-dev (>= 0.6.0), libnotcurses++-dev (>= 1.1.1), cmake (>= 3.14)
+Standards-Version: 4.5.0
 Homepage: https://nick-black.com/dankwiki/index.php/Spectrummaster
 Vcs-Git: https://github.com/dankamongmen/spectrummaster.git
 

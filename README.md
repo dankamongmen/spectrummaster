@@ -7,6 +7,7 @@ console-based SDR receiver / waterfall / spectrumscanner
 ## Requirements
 
 * A C++17 compiler
+* CMake 3.14+
 * notcurses 1.1.0+
 * librtlsdr 0.6.0+
 * libusb 1.0.23+

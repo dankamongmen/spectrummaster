@@ -1,6 +1,7 @@
 #ifndef SPECTRUMMASTER_USB
 #define SPECTRUMMASTER_USB
 
+#include <thread>
 #include <iomanip>
 #include <libusb.h>
 #include <iostream>
@@ -36,15 +37,30 @@ usbctx_(nullptr)
   if(e != LIBUSB_SUCCESS){
     throw USBException(libusb_strerror(static_cast<libusb_error>(e)));
   }
+  tid = std::thread(&SmUSB::USBThread, this);
 }
 
 ~SmUSB() {
+  tid.join();
   libusb_exit(usbctx_);
 }
 
 private:
 libusb_context *usbctx_;
 libusb_hotplug_callback_handle cbhandle_;
+std::thread tid;
+
+void USBThread() {
+  while(true){
+    int completed = 0;
+    auto e = libusb_handle_events_completed(usbctx_, &completed);
+    if(e != LIBUSB_SUCCESS){
+      // FIXME...
+    }else{
+      std::cout << "Completion integer: " << completed << std::endl; // FIXME?
+    }
+  }
+}
 
 int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event){
   int bus = libusb_get_bus_number(dev);

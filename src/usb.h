@@ -1,6 +1,7 @@
 #ifndef SPECTRUMMASTER_USB
 #define SPECTRUMMASTER_USB
 
+#include <iomanip>
 #include <libusb.h>
 #include <functional>
 
@@ -45,6 +46,31 @@ libusb_context *usbctx_;
 libusb_hotplug_callback_handle cbhandle_;
 
 int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event){
+  int bus = libusb_get_bus_number(dev);
+  int port = libusb_get_port_number(dev);
+  int addr = libusb_get_device_address(dev);
+  libusb_device_descriptor desc;
+  auto e = libusb_get_device_descriptor(dev, &desc);
+  if(e){
+    std::cerr << "Couldn't get device descriptor for " << bus << ":" << port << ":" << addr
+              << libusb_strerror(static_cast<libusb_error>(e)) << std::endl;
+    return 0;
+  }
+  constexpr int USB_TOPOLOGY_MAXLEN = 7;
+  std::array<uint8_t, USB_TOPOLOGY_MAXLEN> numbers;
+  auto ret = libusb_get_port_numbers(dev, numbers.data(), numbers.size());
+  char prev = std::cout.fill('0');
+  std::cout << "E" << event
+            << " VendID 0x" << std::hex << std::setw(4) << desc.idVendor
+            << " ProdID 0x" << std::setw(4) << desc.idProduct << std::dec
+            << " Bus " << std::setw(3) << bus
+            << " Port " << std::setw(3) << port
+            << " Addr " << std::setw(3) << addr << " ";
+  for(auto n = 0 ; n < ret ; ++n){
+    std::cout << static_cast<int>(numbers[n]) << (n + 1 < ret ? "." : "");
+  }
+  std::cout << std::endl;
+  std::cout.fill(prev);
   // FIXME accumulate (and/or prune) device list
   return 0;
 }

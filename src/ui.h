@@ -14,6 +14,10 @@ UI() {
   nc_.stop();
 }
 
+char32_t GetKey() {
+  return nc_.getc(true);
+}
+
 private:
 ncpp::NotCurses nc_;
 

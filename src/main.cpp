@@ -15,7 +15,7 @@ int main(void){
   {
     UI ui{};
     SmUSB usb{};
-    sleep(10);
+    auto key = ui.GetKey();
   }
   return EXIT_SUCCESS;
 }

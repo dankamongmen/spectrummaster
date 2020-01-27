@@ -37,6 +37,28 @@ target_link_libraries(spectrummaster
     "${LIBUSB_LIBRARIES}"
 )
 
+# documentation
+SET(MANSOURCE1 ${CMAKE_CURRENT_SOURCE_DIR}/doc/spectrummaster.1.md)
+FIND_PROGRAM(PANDOC pandoc)
+if(NOT PANDOC)
+  message(WARNING "pandoc not found, won't generate documentation")
+else()
+  foreach(m ${MANSOURCE1})
+    get_filename_component(me ${m} NAME_WLE)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${me}
+      DEPENDS ${m}
+      COMMAND ${PANDOC}
+      ARGS --to man --standalone ${m} > ${CMAKE_CURRENT_BINARY_DIR}/${me}
+      COMMENT "Building man page ${me}"
+    )
+    add_custom_target(${me}.man
+      ALL
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${me}
+    )
+  endforeach()
+endif()
+
 # unit tests
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
@@ -74,3 +96,10 @@ add_test(
   NAME spectrummaster-tester
   COMMAND spectrummaster-tester
 )
+
+# installation
+install(FILES
+  ${MANPAGES1}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/man/man1
+)
+install(TARGETS spectrummaster DESTINATION bin)

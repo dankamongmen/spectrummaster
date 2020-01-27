@@ -12,10 +12,23 @@ int main(void){
   }
   // We wrap the UI object in an aritifical scope to have its destructor called
   // on exit (we need to restore the terminal).
+  bool failed = false;
   {
     UI ui{};
     SmUSB usb{};
-    auto key = ui.GetKey();
+    while(true){
+      auto key = ui.GetKey();
+      if(key == (char32_t)-1){
+        failed = true;
+        break;
+      }
+      if(key == 'q'){
+        break;
+      }
+    }
+  }
+  if(failed){
+    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }

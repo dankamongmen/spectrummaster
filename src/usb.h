@@ -3,6 +3,7 @@
 
 #include <iomanip>
 #include <libusb.h>
+#include <iostream>
 #include <functional>
 
 class USBException : public std::runtime_error {

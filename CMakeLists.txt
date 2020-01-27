@@ -38,6 +38,10 @@ target_link_libraries(spectrummaster
 )
 
 # unit tests
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(CTest)
+endif()
+
 file(GLOB TESTSRCS CONFIGURE_DEPENDS tests/*.cpp)
 add_executable(spectrummaster-tester ${TESTSRCS})
 target_compile_definitions(spectrummaster-tester
@@ -54,12 +58,15 @@ target_compile_options(spectrummaster-tester
 )
 target_include_directories(spectrummaster-tester
   PRIVATE
+    "${LIBUSB_INCLUDE_DIRS}"
     src
 )
 target_link_libraries(spectrummaster-tester
   PRIVATE
+    Threads::Threads
     doctest::doctest
     notcurses notcurses++
+    "${LIBUSB_LIBRARIES}"
 )
 
 enable_testing()

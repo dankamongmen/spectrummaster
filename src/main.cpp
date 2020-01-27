@@ -1,5 +1,6 @@
 #include <clocale>
 #include <cstdlib>
+#include <unistd.h>
 #include <iostream>
 #include "usb.h"
 #include "ui.h"
@@ -14,6 +15,7 @@ int main(void){
   {
     UI ui{};
     SmUSB usb{};
+    sleep(10);
   }
   return EXIT_SUCCESS;
 }

@@ -2,6 +2,7 @@
 #define SPECTRUMMASTER_USB
 
 #include <thread>
+#include <atomic>
 #include <iomanip>
 #include <libusb.h>
 #include <iostream>
@@ -17,7 +18,7 @@ class SmUSB {
 public:
 
 SmUSB() :
-usbctx_(nullptr)
+cancelled_(false)
 {
   auto e = libusb_init(&usbctx_);
   if(e != LIBUSB_SUCCESS){
@@ -41,6 +42,8 @@ usbctx_(nullptr)
 }
 
 ~SmUSB() {
+  // FIXME need a way to interrupt thread in libusb_handle_events_completed()
+  cancelled_ = true;
   tid.join();
   libusb_exit(usbctx_);
 }
@@ -49,9 +52,10 @@ private:
 libusb_context *usbctx_;
 libusb_hotplug_callback_handle cbhandle_;
 std::thread tid;
+std::atomic<bool> cancelled_;
 
 void USBThread() {
-  while(true){
+  while(!cancelled_){
     int completed = 0;
     auto e = libusb_handle_events_completed(usbctx_, &completed);
     if(e != LIBUSB_SUCCESS){

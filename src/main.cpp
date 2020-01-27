@@ -10,6 +10,7 @@ int main(void){
     std::cerr << "Couldn't set locale\n";
     return EXIT_FAILURE;
   }
+  // FIXME handle CL arguments
   // We wrap the UI object in an aritifical scope to have its destructor called
   // on exit (we need to restore the terminal).
   bool failed = false;

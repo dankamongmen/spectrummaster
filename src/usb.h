@@ -66,7 +66,21 @@ void USBThread() {
   }
 }
 
+struct USBSpeed {
+  uint64_t bps;
+};
+
 int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event event){
+  static constexpr std::array<struct USBSpeed, 8> speeds {{
+    {           0, }, // unknown
+    {     1500000, }, // usb1.0 lowspeed
+    {    12000000, }, // usb1.1 fullspeed
+    {   480000000, }, // usb2 highspeed
+    {  5000000000, }, // usb3 superspeed
+    { 10000000000, }, // usb3.1 superspeed+
+    { 20000000000, }, // usb3.2 superspeed+
+    { 40000000000, }, // usb4 superspeed+
+  }};
   int bus = libusb_get_bus_number(dev);
   int port = libusb_get_port_number(dev);
   int addr = libusb_get_device_address(dev);
@@ -81,9 +95,18 @@ int DevCallback(libusb_context *ctx, libusb_device *dev, libusb_hotplug_event ev
   std::array<uint8_t, USB_TOPOLOGY_MAXLEN> numbers;
   auto ret = libusb_get_port_numbers(dev, numbers.data(), numbers.size());
   char prev = std::cout.fill('0');
+  int speedidx = libusb_get_device_speed(dev);
+  if(speedidx < 0 || static_cast<size_t>(speedidx) >= speeds.size()){
+    std::cerr << "Unknown speed (" << speedidx << ") for " << bus << ":"
+              << port << ":" << addr
+              << libusb_strerror(static_cast<libusb_error>(e)) << std::endl;
+    return 0;
+  }
+  auto& speed = speeds[speedidx];
   std::cout << "E" << event
             << " VendID 0x" << std::hex << std::setw(4) << desc.idVendor
             << " ProdID 0x" << std::setw(4) << desc.idProduct << std::dec
+            << " " << ((double)speed.bps / 1000000) // FIXME enmetric()icize
             << " Bus " << std::setw(3) << bus
             << " Port " << std::setw(3) << port
             << " Addr " << std::setw(3) << addr << " ";
